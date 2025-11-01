@@ -28,19 +28,48 @@ A Hammerspoon spoon for Emacs automation and message display.
 
 * Usage
 
-The spoon is loaded via the =dmg_load_emacs_helper()= function in =dmg-functions.lua=:
+** Loading the Spoon
+
+Load the spoon and add convenience methods:
 
 #+BEGIN_SRC lua
-emh = dmg_load_emacs_helper()
+local emh = hs.loadSpoon("hs_emacs_helper")
+
+function emacs_org_roam_capture(template)
+  if template then
+    emh:emacs_execute(string.format('(org-roam-capture nil "%s")', template))
+  else
+    emh:emacs_execute('(org-roam-capture)')
+  end
+end
+
+function emacs_agenda()
+  emh:emacs_execute("(org-agenda)")
+end
+
+-- whenever this key is pressed, if emacs is not the current app, summon it
+-- and pass the keys to it
+-- otherwise simply pass the keys directly to emacs
+
+keyId1 = emh:bind_key_to_emacs({"cmd", "ctrl"}, "c")
+keyId2 = emh:bind_key_to_emacs({"ctrl"}, "x")
+
+-- disable key
+emh:toggle_key_to_emacs(keyId1, false)
+-- enable
+emh:toggle_key_to_emacs(keyId1, true)
+-- toggle
+emh:toggle_key_to_emacs(keyId1)
+
+-- disable all keys
+emh:toggle_all_keys_to_emacs(false)
+
+-- enable all keys
+emh:toggle_all_keys_to_emacs(true)
+
 #+END_SRC
 
-This automatically:
-- Loads the spoon
-- Adds convenience methods for common Emacs operations
-- Binds Cmd+Ctrl+. to open tabs and bookmarks
-- Verifies emacsclient is available
-
-** Basic Usage
+** Other Usage
 
 Execute elisp code:
 #+BEGIN_SRC lua
@@ -50,21 +79,6 @@ emh:emacs_execute('(message "Hello from Emacs")')
 Activate Emacs:
 #+BEGIN_SRC lua
 emh:focus_emacs()
-#+END_SRC
-
-Bind a hotkey to trigger within Emacs:
-#+BEGIN_SRC lua
-local keyId = emh:bind_key_to_emacs({"cmd", "alt"}, "c")
-#+END_SRC
-
-Display on-screen message:
-#+BEGIN_SRC lua
-emh:message("Your message here")
-#+END_SRC
-
-Update menubar status:
-#+BEGIN_SRC lua
-emh:update_menu_message("Processing...")
 #+END_SRC
 
 Toggle hotkey state:
