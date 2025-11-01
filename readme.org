@@ -1,0 +1,81 @@
+#+TITLE: hs_emacs_helper
+
+A Hammerspoon spoon for Emacs automation and message display.
+
+* Features
+
+- **Emacs Control**: Activate Emacs and execute elisp code via emacsclient
+- **Message Display**: Show temporary on-screen messages and a menubar for messages
+- **No Dependencies**: Uses only core Hammerspoon APIs
+
+* Core Methods
+
+** Emacs Control
+- =emacs_execute(elisp)= - Execute elisp code (with proper shell escaping)
+- =focus_emacs()= - Activate Emacs application
+- =emacs_is_front_app()= - Check if Emacs is frontmost
+
+** Message Display
+- =message(message)= - Show temporary on-screen message (auto-hides after 3s)
+- =update_menu_message(message)= - Update menubar status
+- =message_hide()= - Hide the message canvas
+- =reset_menu_message()= - Reset menubar to empty state
+
+* Configuration
+
+- =emacsClient= - Path to emacsclient (default: /opt/homebrew/bin/emacsclient)
+- =msgShowDuration= - Message display duration in seconds (default: 3)
+
+* Usage
+
+The spoon is loaded via the =dmg_load_emacs_helper()= function in =dmg-functions.lua=:
+
+#+BEGIN_SRC lua
+emh = dmg_load_emacs_helper()
+#+END_SRC
+
+This automatically:
+- Loads the spoon
+- Adds convenience methods for common Emacs operations
+- Binds Cmd+Ctrl+. to open tabs and bookmarks
+- Verifies emacsclient is available
+
+** Basic Usage
+
+Execute elisp code:
+#+BEGIN_SRC lua
+emh:emacs_execute('(message "Hello from Emacs")')
+#+END_SRC
+
+Activate Emacs:
+#+BEGIN_SRC lua
+emh:focus_emacs()
+#+END_SRC
+
+Bind a hotkey to trigger within Emacs:
+#+BEGIN_SRC lua
+local keyId = emh:bind_key_to_emacs({"cmd", "alt"}, "c")
+#+END_SRC
+
+Display on-screen message:
+#+BEGIN_SRC lua
+emh:message("Your message here")
+#+END_SRC
+
+Update menubar status:
+#+BEGIN_SRC lua
+emh:update_menu_message("Processing...")
+#+END_SRC
+
+Toggle hotkey state:
+#+BEGIN_SRC lua
+emh:toggle_key_to_emacs(keyId)           -- Toggle specific hotkey
+emh:toggle_all_keys_to_emacs(true)       -- Enable all hotkeys
+emh:toggle_all_keys_to_emacs(false)      -- Disable all hotkeys
+#+END_SRC
+
+* Assumptions
+
+- emacs always has at least one window open
+- emacs is running in server mode
+- emacsclient is available at the configured path
