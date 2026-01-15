@@ -8,7 +8,7 @@ obj.__index = obj
 
 -- metadata
 obj.name = "hs emacs helper"
-obj.version = "0.2"
+obj.version = "0.3"
 obj.author = "dmg <dmg@turingmachine.org>"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 obj.logger = hs.logger.new("emacs_helper")
@@ -210,13 +210,43 @@ end
 function obj:emacs_execute(elisp)
   if not obj:focus_emacs() then
     hs.alert("No emacs window found")
-    return
+    return false
   end
-  -- Properly escape single quotes for shell: replace ' with '\''
-  local escaped_elisp = elisp:gsub("'", "'\\''")
-  command = string.format("%s -n -e '%s' &", obj.emacsClient, escaped_elisp)
-  obj.logger.df("executing emacsclient [%s]", command)
-  os.execute(command)
+
+  if type(elisp) ~= "string" or elisp == "" then
+    obj.logger.ef("emacs_execute called with invalid elisp")
+    return false
+  end
+
+  local args = { "-n", "-e", elisp }
+
+  obj.logger.df(
+    "executing emacsclient [%s] %s",
+    obj.emacsClient,
+    hs.inspect(args)
+  )
+
+  local task = hs.task.new(
+    obj.emacsClient,
+    function(exitCode, stdOut, stdErr)
+      if exitCode ~= 0 then
+        obj.logger.ef(
+          "emacsclient failed (%d): %s",
+          exitCode,
+          stdErr
+        )
+      end
+    end,
+    args
+  )
+
+  if not task then
+    obj.logger.ef("failed to create hs.task for emacsclient")
+    return false
+  end
+
+  task:start()
+  return true
 end
 
 -------------------------------------------------
