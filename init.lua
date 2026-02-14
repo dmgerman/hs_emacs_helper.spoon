@@ -128,7 +128,7 @@ end
 function obj:bind_key_to_emacs(key1, key2)
   local keyId = table.concat(key1, "+") .. "+" .. key2
 
-  obj.bundleKeys[keyId] = hs.hotkey.bind(key1, key2, function()
+  obj.bundleKeys[keyId] = hs.hotkey.bind(key1, key2, "Forward " .. keyId .. " to Emacs [Emacs]", function()
     local hotkey = obj.bundleKeys[keyId]
 
     if not hotkey then
