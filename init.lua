@@ -198,24 +198,22 @@ function obj:toggle_all_keys_to_emacs(enable)
 end
 
 --- Executes elisp code via emacsclient.
--- Properly escapes single quotes for shell execution.
 --
 -- @param elisp (string): The elisp code to execute
+-- @param raise (boolean, optional): If true, activate Emacs before executing
 --
 -- @details:
--- - Focuses Emacs window first
--- - Escapes single quotes: ' becomes '\''
--- - Executes asynchronously via os.execute
--- - Logs command for debugging
-function obj:emacs_execute(elisp)
-  if not obj:focus_emacs() then
-    hs.alert("No emacs window found")
-    return false
-  end
-
+-- - Runs asynchronously via hs.task
+-- - Alerts if emacsclient exits non-zero
+-- - Raise is best-effort; execution is not gated on it
+function obj:emacs_execute(elisp, raise)
   if type(elisp) ~= "string" or elisp == "" then
     obj.logger.ef("emacs_execute called with invalid elisp")
     return false
+  end
+
+  if raise then
+    obj:focus_emacs()
   end
 
   local args = { "-n", "-e", elisp }
@@ -235,6 +233,7 @@ function obj:emacs_execute(elisp)
           exitCode,
           stdErr
         )
+        hs.alert("emacsclient failed: " .. (stdErr or "unknown"))
       end
     end,
     args
