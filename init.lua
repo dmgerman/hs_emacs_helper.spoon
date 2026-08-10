@@ -68,8 +68,12 @@ function obj:focus_emacs()
     return true
   end
 
-  local emacs = hs.application.find(obj.EMACS_BUNDLE_ID)
-  return emacs and emacs:activate()
+  -- launchOrFocusByBundleID goes through NSWorkspace, which reliably
+  -- foregrounds the app even when app:activate() is blocked by macOS
+  -- focus-stealing prevention after certain programmatic-focus sequences
+  -- (e.g. Emacs `select-frame-set-input-focus` followed by another app
+  -- raising itself).
+  return hs.application.launchOrFocusByBundleID(obj.EMACS_BUNDLE_ID)
 end
 
 --- Sets hotkey enabled/disabled state.
